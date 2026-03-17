@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MedCall — Вызов врача на дом</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #1B4F45;
+      --green-light: #2A6B5E;
+      --bg: #F7F3EE;
+      --dark: #1B1B1B;
+      --urgent: #E05A2B;
+      --text: #2C2C2C;
+      --muted: #7A7A7A;
+      --border: #E8E3DC;
+      --white: #FFFFFF;
+      --radius: 16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Mulish', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .page-wrap {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--bg);
+      overflow: hidden;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up {
+      opacity: 0;
+      animation: fadeUp 0.55s ease forwards;
+    }
+    .delay-1 { animation-delay: 0.10s; }
+    .delay-2 { animation-delay: 0.22s; }
+    .delay-3 { animation-delay: 0.34s; }
+    .delay-4 { animation-delay: 0.46s; }
+    .delay-5 { animation-delay: 0.58s; }
+    .delay-6 { animation-delay: 0.70s; }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--green);
+      padding: 28px 24px 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before, .hero::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      pointer-events: none;
+    }
+    .hero::before {
+      width: 260px; height: 260px;
+      top: -80px; right: -70px;
+    }
+    .hero::after {
+      width: 180px; height: 180px;
+      bottom: -60px; left: -40px;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+      position: relative;
+      z-index: 1;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo-icon svg { width: 18px; height: 18px; }
+    .logo-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.3px;
+    }
+
+    .hero-content { position: relative; z-index: 1; }
+
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.25;
+      margin-bottom: 12px;
+    }
+    .hero-sub {
+      color: rgba(255,255,255,0.75);
+      font-size: 14px;
+      margin-bottom: 24px;
+      max-width: 320px;
+    }
+
+    .badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    /* ── STATS ── */
+    .stats {
+      background: var(--white);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+    .stat-cell {
+      padding: 20px 12px;
+      text-align: center;
+      position: relative;
+    }
+    .stat-cell + .stat-cell::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 16px; bottom: 16px;
+      width: 1px;
+      background: var(--border);
+    }
+    .stat-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    /* ── SECTIONS ── */
+    .section {
+      padding: 36px 20px;
+    }
+    .section-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .steps { display: flex; flex-direction: column; gap: 12px; }
+
+    .step-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      transition: box-shadow 0.2s ease;
+    }
+    .step-card:hover {
+      box-shadow: 0 4px 18px rgba(27,79,69,0.10);
+    }
+    .step-num {
+      width: 36px; height: 36px;
+      min-width: 36px;
+      background: var(--green);
+      border-radius: 50%;
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step-title {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+    .step-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── FORM CARD ── */
+    .form-section {
+      padding: 0 20px 36px;
+    }
+    .form-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 28px rgba(0,0,0,0.08);
+      padding: 24px 20px 20px;
+    }
+    .form-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+
+    /* Urgency toggle */
+    .urgency-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .urgency-btn {
+      padding: 11px 10px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      font-family: 'Mulish', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .urgency-btn:hover { border-color: var(--green); color: var(--green); }
+    .urgency-btn.active[data-urgency="normal"] {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+    .urgency-btn.active[data-urgency="urgent"] {
+      background: var(--urgent);
+      border-color: var(--urgent);
+      color: #fff;
+    }
+
+    /* Form fields */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+    }
+    .field input,
+    .field textarea {
+      width: 100%;
+      padding: 11px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Mulish', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: #FAFAF8;
+      outline: none;
+      transition: border-color 0.2s ease;
+      resize: none;
+    }
+    .field input:focus,
+    .field textarea:focus {
+      border-color: var(--green);
+      background: var(--white);
+    }
+    .field input::placeholder,
+    .field textarea::placeholder { color: #BDBDBD; }
+    .field textarea { height: 80px; }
+
+    /* Call pill */
+    .call-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(27,79,69,0.07);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      text-decoration: none;
+      transition: background 0.2s ease;
+    }
+    .call-pill:hover { background: rgba(27,79,69,0.12); }
+    .call-icon {
+      width: 36px; height: 36px;
+      background: var(--green);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .call-icon svg { width: 16px; height: 16px; }
+    .call-number {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--green);
+    }
+    .call-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .call-arrow {
+      margin-left: auto;
+      color: var(--green);
+      opacity: 0.5;
+      font-size: 18px;
+    }
+
+    /* Submit button */
+    .submit-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Mulish', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 12px;
+    }
+    .submit-btn:hover { background: var(--green-light); }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .privacy-note {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .privacy-note a { color: var(--green); text-decoration: none; }
+
+    /* ── SUCCESS STATE ── */
+    .success-state {
+      text-align: center;
+      padding: 32px 16px;
+    }
+    .success-circle {
+      width: 72px; height: 72px;
+      background: rgba(27,79,69,0.10);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .success-circle svg { width: 36px; height: 36px; }
+    .success-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 10px;
+    }
+    .success-text {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 280px;
+      margin: 0 auto 24px;
+    }
+    .success-btn {
+      display: inline-block;
+      padding: 12px 28px;
+      background: var(--green);
+      color: #fff;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      font-family: 'Mulish', sans-serif;
+      cursor: pointer;
+      border: none;
+      transition: background 0.2s ease;
+    }
+    .success-btn:hover { background: var(--green-light); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--dark);
+      padding: 32px 20px 24px;
+      color: rgba(255,255,255,0.6);
+    }
+    .footer-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .footer-logo-icon {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.10);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .footer-logo-icon svg { width: 16px; height: 16px; }
+    .footer-logo-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .footer-desc {
+      font-size: 13px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .footer-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.10);
+      margin-bottom: 20px;
+    }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      margin-bottom: 20px;
+    }
+    .footer-links a {
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s ease;
+    }
+    .footer-links a:hover { color: rgba(255,255,255,0.85); }
+    .footer-copy {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      line-height: 1.6;
+    }
+    .footer-disclaimer {
+      font-size: 11px;
+      color: rgba(255,255,255,0.30);
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (min-width: 431px) {
+      .page-wrap { box-shadow: 0 0 60px rgba(0,0,0,0.10); }
+    }
+    @media (min-width: 768px) {
+      .page-wrap { max-width: 480px; }
+      .hero h1 { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="logo-row fade-up delay-1">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </div>
+      <span class="logo-name">MedCall</span>
+    </div>
+    <div class="hero-content">
+      <h1 class="fade-up delay-2">Врач приедет<br>к вам на место</h1>
+      <p class="hero-sub fade-up delay-3">Квалифицированная медицинская помощь на дому — быстро, без очередей и страховки</p>
+      <div class="badges fade-up delay-4">
+        <span class="badge">Круглосуточно</span>
+        <span class="badge">Выезд от 40 мин</span>
+        <span class="badge">Конфиденциально</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── STATS ── -->
+  <div class="stats fade-up delay-5">
+    <div class="stat-cell">
+      <div class="stat-val">24/7</div>
+      <div class="stat-label">Работаем<br>без выходных</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val">от 40</div>
+      <div class="stat-label">Мин. до<br>врача</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val">Топ</div>
+      <div class="stat-label">Лучшие<br>специалисты</div>
+    </div>
+  </div>
+
+  <!-- ── HOW IT WORKS ── -->
+  <section class="section">
+    <h2 class="section-heading fade-up delay-1">Как это работает</h2>
+    <p class="section-sub fade-up delay-2">Три простых шага — и врач уже едет к вам</p>
+    <div class="steps">
+      <div class="step-card fade-up delay-3">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Оставьте заявку</div>
+          <div class="step-desc">Заполните форму ниже или позвоните нам — займёт меньше минуты</div>
+        </div>
+      </div>
+      <div class="step-card fade-up delay-4">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Мы подберём врача</div>
+          <div class="step-desc">Диспетчер подбирает ближайшего специалиста нужного профиля</div>
+        </div>
+      </div>
+      <div class="step-card fade-up delay-5">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">Врач едет к вам</div>
+          <div class="step-desc">Проведён осмотр, при необходимости назначены процедуры и необходимые действия — и всё это с подробными рекомендациями по дальнейшему лечению</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FORM ── -->
+  <section class="form-section">
+    <div class="form-card fade-up delay-1" id="formCard">
+      <h2 class="form-title">Вызвать врача</h2>
+
+      <div class="urgency-row">
+        <button class="urgency-btn active" data-urgency="normal" id="btnNormal">Обычный вызов</button>
+        <button class="urgency-btn" data-urgency="urgent" id="btnUrgent">🚨 Срочно!</button>
+      </div>
+
+      <form id="callForm" novalidate>
+        <div class="field">
+          <label for="contactName">Контактное лицо *</label>
+          <input type="text" id="contactName" placeholder="Как к вам обращаться" autocomplete="name" />
+        </div>
+
+        <div class="field">
+          <label for="address">Адрес выезда *</label>
+          <input type="text" id="address" placeholder="Город, улица, дом, квартира" autocomplete="street-address" />
+        </div>
+
+        <div class="field">
+          <label for="symptoms">Желаемая помощь / жалобы</label>
+          <textarea id="symptoms" placeholder="Опишите кратко, что беспокоит и какая помощь нужна..."></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">Отправить заявку на медицинскую помощь</button>
+
+        <p class="privacy-note">
+          Нажимая кнопку, вы соглашаетесь с <a href="#">политикой конфиденциальности</a><br>
+          и обработкой персональных данных
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="footer-logo-row">
+      <div class="footer-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="2.5" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </div>
+      <span class="footer-logo-name">MedCall</span>
+    </div>
+    <p class="footer-desc">Профессиональная медицинская помощь на дому круглосуточно и без выходных</p>
+    <div class="footer-divider"></div>
+    <div class="footer-links">
+      <a href="#">О службе</a>
+      <a href="#">Специалисты</a>
+      <a href="#">Цены</a>
+      <a href="#">Политика конфиденциальности</a>
+    </div>
+    <p class="footer-copy">© 2026 MedCall. Все права защищены.</p>
+    <p class="footer-disclaimer">Не является экстренной медицинской службой. При угрозе жизни звоните 103.</p>
+  </footer>
+
+</div>
+
+<script>
+  // ════════════════════════════════════════════
+  // НАСТРОЙКА EMAILJS
+  // 1. Зарегистрируйтесь на https://www.emailjs.com/
+  // 2. Создайте Email Service (Gmail / Yandex / др.) → скопируйте Service ID
+  // 3. Создайте Email Template с переменными:
+  //    {{urgency}}, {{contact_name}}, {{address}}, {{symptoms}}, {{time}}
+  //    В поле "To Email" укажите адрес, куда приходят заявки
+  // 4. Скопируйте Public Key из раздела Account → API Keys
+  // 5. Вставьте все три значения ниже:
+  const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // ← Account → API Keys
+  const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // ← Email Services
+  const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // ← Email Templates
+  // ════════════════════════════════════════════
+
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+  // ── Urgency toggle
+  const btnNormal = document.getElementById('btnNormal');
+  const btnUrgent = document.getElementById('btnUrgent');
+
+  btnNormal.addEventListener('click', () => {
+    btnNormal.classList.add('active');
+    btnUrgent.classList.remove('active');
+  });
+  btnUrgent.addEventListener('click', () => {
+    btnUrgent.classList.add('active');
+    btnNormal.classList.remove('active');
+  });
+
+  // ── Form submit
+  const form = document.getElementById('callForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const formCard = document.getElementById('formCard');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const contactName = document.getElementById('contactName').value.trim();
+    const address = document.getElementById('address').value.trim();
+
+    if (!contactName || !address) {
+      const origText = submitBtn.textContent;
+      const origBg = submitBtn.style.background;
+      submitBtn.style.background = '#E05A2B';
+      submitBtn.style.transition = 'none';
+      submitBtn.textContent = 'Заполните обязательные поля';
+      [['contactName', contactName], ['address', address]].forEach(([id, val]) => {
+        if (!val) {
+          const el = document.getElementById(id);
+          el.style.borderColor = '#E05A2B';
+          el.style.background = 'rgba(224,90,43,0.05)';
+          setTimeout(() => {
+            el.style.borderColor = '';
+            el.style.background = '';
+          }, 2000);
+        }
+      });
+      setTimeout(() => {
+        submitBtn.style.background = origBg;
+        submitBtn.style.transition = '';
+        submitBtn.textContent = origText;
+      }, 2000);
+      return;
+    }
+
+    // ── Send email via EmailJS
+    const isUrgent = btnUrgent.classList.contains('active');
+    const arrivalMin = isUrgent ? '40' : '60–90';
+    const symptoms = document.getElementById('symptoms').value.trim();
+
+    const now = new Date();
+    const timeStr = now.toLocaleString('ru-RU', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Отправляем заявку…';
+
+    const templateParams = {
+      urgency:      isUrgent ? '🚨 СРОЧНО' : 'Обычный вызов',
+      contact_name: contactName,
+      address:      address,
+      symptoms:     symptoms || '—',
+      time:         timeStr,
+    };
+
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+      .then(() => {
+        formCard.innerHTML = `
+          <div class="success-state fade-up delay-1">
+            <div class="success-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#1B4F45" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+            </div>
+            <h2 class="success-title">Заявка принята!</h2>
+            <p class="success-text">
+              Наш диспетчер уже подбирает ближайшего специалиста.<br>
+              Ожидайте звонка в течение <strong>5 минут</strong>.<br>
+              Ориентировочное время прибытия врача — <strong>${arrivalMin} мин</strong>.
+            </p>
+            <button class="success-btn" onclick="location.reload()">Новая заявка</button>
+          </div>
+        `;
+      })
+      .catch((err) => {
+        console.error('EmailJS error:', err);
+        submitBtn.disabled = false;
+        submitBtn.style.background = '#E05A2B';
+        submitBtn.style.transition = 'none';
+        submitBtn.textContent = 'Ошибка отправки — попробуйте ещё раз';
+        setTimeout(() => {
+          submitBtn.disabled = false;
+          submitBtn.style.background = '';
+          submitBtn.style.transition = '';
+          submitBtn.textContent = 'Вызвать врача';
+        }, 3000);
+      });
+  });
+</script>
+</body>
+</html>
