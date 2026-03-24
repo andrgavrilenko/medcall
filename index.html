@@ -292,6 +292,7 @@
       letter-spacing: 0.6px;
       margin-bottom: 6px;
     }
+    .field select,
     .field input,
     .field textarea {
       width: 100%;
@@ -311,8 +312,18 @@
       border-color: var(--green);
       background: var(--white);
     }
+    .field select:focus {
+      border-color: var(--green);
+      background-color: var(--white);
+    }
     .field input::placeholder,
     .field textarea::placeholder { color: #BDBDBD; }
+    .field select { appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A7A7A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 13px center; padding-right: 36px; cursor: pointer;
+    }
+    .field select:invalid { color: #BDBDBD; }
+    .field select option { color: var(--text); }
     .field textarea { height: 80px; }
 
     /* Call pill */
@@ -577,6 +588,17 @@
 
       <form id="callForm" novalidate>
         <div class="field">
+          <label for="service">Услуга *</label>
+          <select id="service" required>
+            <option value="" disabled selected>Выберите услугу</option>
+            <option value="option1">Опция 1</option>
+            <option value="option2">Опция 2</option>
+            <option value="option3">Опция 3</option>
+            <option value="option4">Опция 4</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label for="contactName">Контактное лицо *</label>
           <input type="text" id="contactName" placeholder="Как к вам обращаться" autocomplete="name" />
         </div>
@@ -631,7 +653,7 @@
   // 1. Зарегистрируйтесь на https://www.emailjs.com/
   // 2. Создайте Email Service (Gmail / Yandex / др.) → скопируйте Service ID
   // 3. Создайте Email Template с переменными:
-  //    {{urgency}}, {{contact_name}}, {{address}}, {{symptoms}}, {{time}}
+  //    {{urgency}}, {{service}}, {{contact_name}}, {{address}}, {{symptoms}}, {{time}}
   //    В поле "To Email" укажите адрес, куда приходят заявки
   // 4. Скопируйте Public Key из раздела Account → API Keys
   // 5. Вставьте все три значения ниже:
@@ -663,16 +685,17 @@
   form.addEventListener('submit', (e) => {
     e.preventDefault();
 
+    const service = document.getElementById('service').value;
     const contactName = document.getElementById('contactName').value.trim();
     const address = document.getElementById('address').value.trim();
 
-    if (!contactName || !address) {
+    if (!service || !contactName || !address) {
       const origText = submitBtn.textContent;
       const origBg = submitBtn.style.background;
       submitBtn.style.background = '#E05A2B';
       submitBtn.style.transition = 'none';
       submitBtn.textContent = 'Заполните обязательные поля';
-      [['contactName', contactName], ['address', address]].forEach(([id, val]) => {
+      [['service', service], ['contactName', contactName], ['address', address]].forEach(([id, val]) => {
         if (!val) {
           const el = document.getElementById(id);
           el.style.borderColor = '#E05A2B';
@@ -705,8 +728,12 @@
     submitBtn.disabled = true;
     submitBtn.textContent = 'Отправляем заявку…';
 
+    const serviceEl = document.getElementById('service');
+    const serviceName = serviceEl.options[serviceEl.selectedIndex].text;
+
     const templateParams = {
       urgency:      isUrgent ? '🚨 СРОЧНО' : 'Обычный вызов',
+      service:      serviceName,
       contact_name: contactName,
       address:      address,
       symptoms:     symptoms || '—',
