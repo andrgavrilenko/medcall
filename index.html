@@ -800,8 +800,7 @@
     submitBtn.disabled = true;
     submitBtn.textContent = 'Отправляем заявку…';
 
-    const serviceEl = document.getElementById('service');
-    const serviceName = serviceEl.options[serviceEl.selectedIndex].text;
+    const serviceName = document.getElementById('service').value;
 
     const templateParams = {
       urgency:      isUrgent ? '🚨 СРОЧНО' : 'Обычный вызов',
