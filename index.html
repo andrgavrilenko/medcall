@@ -326,6 +326,37 @@
     .field select option { color: var(--text); }
     .field textarea { height: 80px; }
 
+    /* Service intro */
+    .service-intro {
+      margin-bottom: 18px;
+      padding: 16px;
+      background: rgba(27,79,69,0.05);
+      border-radius: 12px;
+    }
+    .service-intro-text {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    .service-chain {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.3px;
+      margin-bottom: 10px;
+    }
+    .service-chain span {
+      color: var(--urgent);
+      text-decoration: line-through;
+    }
+    .service-intro-sub {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green);
+      line-height: 1.5;
+    }
+
     /* Service cards */
     .service-cards { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
     .service-card {
@@ -621,6 +652,12 @@
       </div>
 
       <form id="callForm" novalidate>
+        <div class="service-intro">
+          <p class="service-intro-text">Инфузионные капельницы вводят витамины, минералы и препараты напрямую в кровь — эффект наступает быстро и ощущается сразу. Подходит всем, кто хочет восстановить силы, улучшить самочувствие или не доводить организм до болезни.</p>
+          <div class="service-chain">Переутомление → Стресс → Спазм → <span>Заболевание</span></div>
+          <p class="service-intro-sub">Мы работаем на первом этапе — снимаем нагрузку и наполняем организм изнутри.</p>
+        </div>
+
         <div class="field">
           <label>Услуга *</label>
           <input type="hidden" id="service" />
