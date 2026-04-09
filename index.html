@@ -604,6 +604,16 @@
         </div>
 
         <div class="field">
+          <label for="city">Город / тип выезда *</label>
+          <select id="city" required>
+            <option value="" disabled selected>Выберите</option>
+            <option value="Москва">Москва</option>
+            <option value="Новосибирск">Новосибирск</option>
+            <option value="Сопровождение">Сопровождение</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label for="address">Адрес выезда *</label>
           <input type="text" id="address" placeholder="Город, улица, дом, квартира" autocomplete="street-address" />
         </div>
@@ -653,7 +663,7 @@
   // 1. Зарегистрируйтесь на https://www.emailjs.com/
   // 2. Создайте Email Service (Gmail / Yandex / др.) → скопируйте Service ID
   // 3. Создайте Email Template с переменными:
-  //    {{urgency}}, {{service}}, {{contact_name}}, {{address}}, {{symptoms}}, {{time}}
+  //    {{urgency}}, {{service}}, {{city}}, {{contact_name}}, {{address}}, {{symptoms}}, {{time}}
   //    В поле "To Email" укажите адрес, куда приходят заявки
   // 4. Скопируйте Public Key из раздела Account → API Keys
   // 5. Вставьте все три значения ниже:
@@ -686,16 +696,17 @@
     e.preventDefault();
 
     const service = document.getElementById('service').value;
+    const city = document.getElementById('city').value;
     const contactName = document.getElementById('contactName').value.trim();
     const address = document.getElementById('address').value.trim();
 
-    if (!service || !contactName || !address) {
+    if (!service || !city || !contactName || !address) {
       const origText = submitBtn.textContent;
       const origBg = submitBtn.style.background;
       submitBtn.style.background = '#E05A2B';
       submitBtn.style.transition = 'none';
       submitBtn.textContent = 'Заполните обязательные поля';
-      [['service', service], ['contactName', contactName], ['address', address]].forEach(([id, val]) => {
+      [['service', service], ['city', city], ['contactName', contactName], ['address', address]].forEach(([id, val]) => {
         if (!val) {
           const el = document.getElementById(id);
           el.style.borderColor = '#E05A2B';
@@ -734,6 +745,7 @@
     const templateParams = {
       urgency:      isUrgent ? '🚨 СРОЧНО' : 'Обычный вызов',
       service:      serviceName,
+      city:         city,
       contact_name: contactName,
       address:      address,
       symptoms:     symptoms || '—',
