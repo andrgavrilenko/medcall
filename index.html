@@ -326,34 +326,35 @@
     .field select option { color: var(--text); }
     .field textarea { height: 80px; }
 
-    /* Service intro */
-    .service-intro {
-      margin-bottom: 18px;
-      padding: 16px;
-      background: rgba(27,79,69,0.05);
+    /* Hero intro */
+    .hero-intro {
+      margin-bottom: 20px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: 12px;
     }
-    .service-intro-text {
+    .hero-intro-text {
       font-size: 13px;
-      color: var(--text);
+      color: rgba(255,255,255,0.85);
       line-height: 1.6;
-      margin-bottom: 12px;
-    }
-    .service-chain {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--muted);
-      letter-spacing: 0.3px;
       margin-bottom: 10px;
     }
-    .service-chain span {
-      color: var(--urgent);
+    .hero-chain {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.3px;
+      margin-bottom: 8px;
+    }
+    .hero-chain span {
+      color: #f08060;
       text-decoration: line-through;
     }
-    .service-intro-sub {
+    .hero-intro-sub {
       font-size: 13px;
       font-weight: 600;
-      color: var(--green);
+      color: rgba(255,255,255,0.95);
       line-height: 1.5;
     }
 
@@ -588,6 +589,11 @@
     <div class="hero-content">
       <h1 class="fade-up delay-2">Специалист приедет<br>к вам на место</h1>
       <p class="hero-sub fade-up delay-3">Квалифицированная медицинская помощь на дому — быстро, без очередей и страховки</p>
+      <div class="hero-intro fade-up delay-3">
+        <p class="hero-intro-text">Инфузионные капельницы вводят витамины, минералы и препараты напрямую в кровь — эффект наступает быстро и ощущается сразу. Подходит всем, кто хочет восстановить силы или не доводить организм до болезни.</p>
+        <div class="hero-chain">Переутомление → Стресс → Спазм → <span>Заболевание</span></div>
+        <p class="hero-intro-sub">Мы работаем на первом этапе — снимаем нагрузку и наполняем организм изнутри.</p>
+      </div>
       <div class="badges fade-up delay-4">
         <span class="badge">Круглосуточно</span>
         <span class="badge">Выезд от 40 мин</span>
@@ -652,12 +658,6 @@
       </div>
 
       <form id="callForm" novalidate>
-        <div class="service-intro">
-          <p class="service-intro-text">Инфузионные капельницы вводят витамины, минералы и препараты напрямую в кровь — эффект наступает быстро и ощущается сразу. Подходит всем, кто хочет восстановить силы, улучшить самочувствие или не доводить организм до болезни.</p>
-          <div class="service-chain">Переутомление → Стресс → Спазм → <span>Заболевание</span></div>
-          <p class="service-intro-sub">Мы работаем на первом этапе — снимаем нагрузку и наполняем организм изнутри.</p>
-        </div>
-
         <div class="field">
           <label>Услуга *</label>
           <input type="hidden" id="service" />
