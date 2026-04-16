@@ -693,6 +693,14 @@
         </div>
 
         <div class="field">
+          <label>Желаемая дата и время *</label>
+          <div class="form-row">
+            <input type="date" id="desiredDate" required />
+            <input type="time" id="desiredTime" required />
+          </div>
+        </div>
+
+        <div class="field">
           <label for="symptoms">Желаемая помощь / жалобы</label>
           <textarea id="symptoms" placeholder="Опишите кратко, что беспокоит и какая помощь нужна..."></textarea>
         </div>
@@ -784,8 +792,10 @@
     const city = document.getElementById('city').value;
     const contactName = document.getElementById('contactName').value.trim();
     const address = document.getElementById('address').value.trim();
+    const desiredDate = document.getElementById('desiredDate').value;
+    const desiredTime = document.getElementById('desiredTime').value;
 
-    if (!service || !city || !contactName || !address) {
+    if (!service || !city || !contactName || !address || !desiredDate || !desiredTime) {
       const origText = submitBtn.textContent;
       const origBg = submitBtn.style.background;
       submitBtn.style.background = '#E05A2B';
@@ -797,7 +807,7 @@
           setTimeout(() => { c.style.borderColor = ''; }, 2000);
         });
       }
-      [['city', city], ['contactName', contactName], ['address', address]].forEach(([id, val]) => {
+      [['city', city], ['contactName', contactName], ['address', address], ['desiredDate', desiredDate], ['desiredTime', desiredTime]].forEach(([id, val]) => {
         if (!val) {
           const el = document.getElementById(id);
           el.style.borderColor = '#E05A2B';
@@ -833,13 +843,15 @@
     const serviceName = document.getElementById('service').value;
 
     const templateParams = {
-      urgency:      isUrgent ? '🚨 СРОЧНО' : 'Обычный вызов',
-      service:      serviceName,
-      city:         city,
-      contact_name: contactName,
-      address:      address,
-      symptoms:     symptoms || '–',
-      time:         timeStr,
+      urgency:       isUrgent ? '🚨 СРОЧНО' : 'Обычный вызов',
+      service:       serviceName,
+      city:          city,
+      contact_name:  contactName,
+      address:       address,
+      desired_date:  desiredDate,
+      desired_time:  desiredTime,
+      symptoms:      symptoms || '–',
+      time:          timeStr,
     };
 
     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
