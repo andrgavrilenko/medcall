@@ -282,6 +282,37 @@
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
+    .datetime-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 8px;
+    }
+    .datetime-confirm {
+      padding: 0 14px;
+      border: 1.5px solid var(--green);
+      border-radius: 10px;
+      background: var(--white);
+      font-family: 'Mulish', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+      white-space: nowrap;
+    }
+    .datetime-confirm:hover { background: var(--green); color: #fff; }
+    .datetime-confirm.done {
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+    }
+    .datetime-hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .datetime-hint.done { color: var(--green); font-weight: 600; }
     .field { margin-bottom: 14px; }
     .field label {
       display: block;
@@ -363,8 +394,10 @@
     .service-card:hover { border-color: var(--green); }
     .service-card.active {
       border-color: var(--green);
-      background: rgba(27,79,69,0.05);
+      background: rgba(27,79,69,0.10);
+      box-shadow: 0 0 0 3px rgba(27,79,69,0.12);
     }
+    .service-card.active .service-card-name { color: var(--green); }
     .service-card-name {
       font-weight: 700;
       font-size: 14px;
@@ -688,16 +721,18 @@
         </div>
 
         <div class="field">
-          <label for="address">Адрес выезда *</label>
-          <input type="text" id="address" placeholder="Город, улица, дом, квартира" autocomplete="street-address" />
+          <label>Желаемая дата и время *</label>
+          <div class="datetime-row">
+            <input type="date" id="desiredDate" required />
+            <input type="time" id="desiredTime" required />
+            <button type="button" class="datetime-confirm" id="datetimeConfirm">Готово</button>
+          </div>
+          <div class="datetime-hint" id="datetimeHint">Выберите дату и время, затем нажмите «Готово»</div>
         </div>
 
         <div class="field">
-          <label>Желаемая дата и время *</label>
-          <div class="form-row">
-            <input type="date" id="desiredDate" required />
-            <input type="time" id="desiredTime" required />
-          </div>
+          <label for="address">Адрес выезда *</label>
+          <input type="text" id="address" placeholder="Город, улица, дом, квартира" autocomplete="street-address" />
         </div>
 
         <div class="field">
@@ -756,6 +791,49 @@
 
   emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 
+  // ── Минимальная дата для поля «Желаемая дата» — сегодня
+  (() => {
+    const d = new Date();
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    document.getElementById('desiredDate').min = today;
+  })();
+
+  // ── Кнопка «Готово» для даты/времени: снимает фокус и подтверждает выбор
+  (() => {
+    const dateEl = document.getElementById('desiredDate');
+    const timeEl = document.getElementById('desiredTime');
+    const btn    = document.getElementById('datetimeConfirm');
+    const hint   = document.getElementById('datetimeHint');
+
+    const fmtDate = (v) => {
+      if (!v) return '';
+      const [y, m, d] = v.split('-');
+      return `${d}.${m}.${y}`;
+    };
+
+    const update = () => {
+      const hasDate = !!dateEl.value;
+      const hasTime = !!timeEl.value;
+      if (hasDate && hasTime) {
+        btn.classList.add('done');
+        hint.classList.add('done');
+        hint.textContent = `Выбрано: ${fmtDate(dateEl.value)} в ${timeEl.value}`;
+      } else {
+        btn.classList.remove('done');
+        hint.classList.remove('done');
+        hint.textContent = 'Выберите дату и время, затем нажмите «Готово»';
+      }
+    };
+
+    dateEl.addEventListener('change', update);
+    timeEl.addEventListener('change', update);
+    btn.addEventListener('click', () => {
+      dateEl.blur();
+      timeEl.blur();
+      update();
+    });
+  })();
+
   // ── Service cards
   document.querySelectorAll('.service-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -795,6 +873,29 @@
     const desiredDate = document.getElementById('desiredDate').value;
     const desiredTime = document.getElementById('desiredTime').value;
 
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const pickedDate = desiredDate ? new Date(desiredDate + 'T00:00:00') : null;
+    const dateInPast = pickedDate && pickedDate < today;
+
+    if (dateInPast) {
+      const el = document.getElementById('desiredDate');
+      const origText = submitBtn.textContent;
+      const origBg = submitBtn.style.background;
+      submitBtn.style.background = '#E05A2B';
+      submitBtn.style.transition = 'none';
+      submitBtn.textContent = 'Дата не может быть в прошлом';
+      el.style.borderColor = '#E05A2B';
+      el.style.background = 'rgba(224,90,43,0.05)';
+      setTimeout(() => {
+        el.style.borderColor = '';
+        el.style.background = '';
+        submitBtn.style.background = origBg;
+        submitBtn.style.transition = '';
+        submitBtn.textContent = origText;
+      }, 2000);
+      return;
+    }
+
     if (!service || !city || !contactName || !address || !desiredDate || !desiredTime) {
       const origText = submitBtn.textContent;
       const origBg = submitBtn.style.background;
@@ -828,7 +929,6 @@
 
     // ── Send email via EmailJS
     const isUrgent = btnUrgent.classList.contains('active');
-    const arrivalMin = isUrgent ? '40' : '60–90';
     const symptoms = document.getElementById('symptoms').value.trim();
 
     const now = new Date();
@@ -865,9 +965,8 @@
             </div>
             <h2 class="success-title">Заявка принята!</h2>
             <p class="success-text">
-              Наш диспетчер уже подбирает ближайшего специалиста.<br>
-              Ожидайте звонка в течение <strong>5 минут</strong>.<br>
-              Ориентировочное время прибытия специалиста – <strong>${arrivalMin} мин</strong>.
+              Мы&nbsp;свяжемся с&nbsp;вами в&nbsp;ближайшее время.<br>
+              Диспетчер уточнит детали и&nbsp;согласует время приезда специалиста.
             </p>
             <button class="success-btn" onclick="location.reload()">Новая заявка</button>
           </div>
