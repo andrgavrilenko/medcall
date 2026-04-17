@@ -282,37 +282,6 @@
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
-    .datetime-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 8px;
-    }
-    .datetime-confirm {
-      padding: 0 14px;
-      border: 1.5px solid var(--green);
-      border-radius: 10px;
-      background: var(--white);
-      font-family: 'Mulish', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--green);
-      cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease;
-      white-space: nowrap;
-    }
-    .datetime-confirm:hover { background: var(--green); color: #fff; }
-    .datetime-confirm.done {
-      background: var(--green);
-      color: #fff;
-      border-color: var(--green);
-    }
-    .datetime-hint {
-      margin-top: 6px;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-    .datetime-hint.done { color: var(--green); font-weight: 600; }
     .field { margin-bottom: 14px; }
     .field label {
       display: block;
@@ -722,12 +691,10 @@
 
         <div class="field">
           <label>Желаемая дата и время *</label>
-          <div class="datetime-row">
+          <div class="form-row">
             <input type="date" id="desiredDate" required />
             <input type="time" id="desiredTime" required />
-            <button type="button" class="datetime-confirm" id="datetimeConfirm">Готово</button>
           </div>
-          <div class="datetime-hint" id="datetimeHint">Выберите дату и время, затем нажмите «Готово»</div>
         </div>
 
         <div class="field">
@@ -796,42 +763,6 @@
     const d = new Date();
     const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     document.getElementById('desiredDate').min = today;
-  })();
-
-  // ── Кнопка «Готово» для даты/времени: снимает фокус и подтверждает выбор
-  (() => {
-    const dateEl = document.getElementById('desiredDate');
-    const timeEl = document.getElementById('desiredTime');
-    const btn    = document.getElementById('datetimeConfirm');
-    const hint   = document.getElementById('datetimeHint');
-
-    const fmtDate = (v) => {
-      if (!v) return '';
-      const [y, m, d] = v.split('-');
-      return `${d}.${m}.${y}`;
-    };
-
-    const update = () => {
-      const hasDate = !!dateEl.value;
-      const hasTime = !!timeEl.value;
-      if (hasDate && hasTime) {
-        btn.classList.add('done');
-        hint.classList.add('done');
-        hint.textContent = `Выбрано: ${fmtDate(dateEl.value)} в ${timeEl.value}`;
-      } else {
-        btn.classList.remove('done');
-        hint.classList.remove('done');
-        hint.textContent = 'Выберите дату и время, затем нажмите «Готово»';
-      }
-    };
-
-    dateEl.addEventListener('change', update);
-    timeEl.addEventListener('change', update);
-    btn.addEventListener('click', () => {
-      dateEl.blur();
-      timeEl.blur();
-      update();
-    });
   })();
 
   // ── Service cards
